@@ -1,0 +1,6 @@
+#!/bin/sh
+export SCRIPTINGSERVER_USERDIR=$(pwd)
+echo $SCRIPTINGSERVER_USERDIR
+cd $(dirname $0)
+java -Dorg.bouncycastle.asn1.allow_unsafe_integer=true -Djava.library.path=./lib -classpath 'lib/*' org.openscdp.scriptingserver.jetty.Launcher $*
+

@@ -1,0 +1,173 @@
+body {
+	background-color: white;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	width: 60em;
+	min-width: 750px;
+	padding: 0;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+
+#navigator {
+	float: left;
+	width: 8em;
+  margin-top: 1em;
+	background: #F0F0F0;
+}
+
+#navigator ul {
+	list-style: none outside none;
+	width: 100%;
+	padding-left: 0;
+}
+
+#navigator li {
+}
+
+#navigator a {
+	display: block;
+	text-decoration: none;
+	background: #F0F0F0;
+	background: linear-gradient(top, #F0F0F0 0%, #d8d8d8 100%);
+	background: -ms-linear-gradient(top, #F0F0F0 0%, #d8d8d8 100%);
+	background: -moz-linear-gradient(top, #F0F0F0 0%, #d8d8d8 100%);
+	background: -webkit-linear-gradient(top, #F0F0F0 0%, #d8d8d8 100%);
+	font-size: 11pt;
+	color: black;
+	padding: 0.2em;
+}
+
+#navigator a:hover {
+	color: white;
+	background: #434244;
+	background: linear-gradient(top, #5f6064 0%, #434244 40%);
+	background: -ms-linear-gradient(top, #5f6064 0%, #434244 40%);
+	background: -moz-linear-gradient(top, #5f6064 0%, #434244 40%);
+	background: -webkit-linear-gradient(top, #5f6064 0%,#434244 40%);
+}
+
+#navigator a.bookmarkactive {
+	color: white;
+	background: #434244;
+	background: linear-gradient(top, #5f6064 0%, #434244 40%);
+	background: -ms-linear-gradient(top, #5f6064 0%, #434244 40%);
+	background: -moz-linear-gradient(top, #5f6064 0%, #434244 40%);
+	background: -webkit-linear-gradient(top, #5f6064 0%,#434244 40%);
+}
+
+
+#main {
+	margin-left: 8em;
+	padding-left: 2em;
+  border-color: #434244;
+  border-left-width: 0.2em;
+	border-left-style: solid;
+	width: 46em;
+}
+
+
+.error {
+	border-width:2px;
+	border-style: solid;
+	border-color:red;
+	padding: 1em;
+}
+
+.ok {
+	border-width:2px;
+	border-style: solid;
+	border-color:green;
+	padding: 1em;
+}
+
+p,a,td {
+	font-size: 10pt;
+}
+
+h1 {
+	font-size: 16pt;
+//	background-color: #f3c01e;
+}
+
+h2 {
+	width: 100%;
+	font-size: 14pt;
+	margin-top: 1cm;
+//	background-color: #ffe97d;
+	background-color: #e8e8e8;
+}
+
+h3 {
+	font-size: 12pt;
+}
+
+pre {
+	font-size: 9pt;
+	background: #f8f8f8;
+	border: 1px solid #d8d8d8;
+	overflow: auto;
+}
+
+p.signature {
+	width: 100%;
+	font-family: "Courier New", monospaced;
+	font-size: 9pt;
+	background: #f8f8f8;
+	border: 1px solid #d8d8d8;
+}
+
+table.content {
+	width: 100%;
+	table-layout: fixed;
+	border: 1px solid #d8d8d8;
+	border-collapse: collapse;
+	border-spacing: 0px;
+}
+
+table.content td {
+	border: 1px solid #d8d8d8;
+}
+
+
+table.content th {
+	border: 1px solid #d8d8d8;
+	text-align: left;
+}
+
+.expandable dl {
+	width: 100%;
+	font-size: 12pt;
+	margin-top: 4px;
+	margin-bottom: 4px;
+	background-color: #e8e8e8;
+}
+
+.expandable dl a {
+	font-size: 12pt;
+	text-decoration: none;
+	color: black;
+}
+
+.expandable dl a:hover {
+	color: blue;
+}
+
+div.formfield {
+	padding-top: .3em;
+}
+
+div.formfield label {
+	display: block;
+	width: 10em;
+	float: left;
+	text-align: right;
+	padding-top: 0.4em;
+	padding-right: 0.4em;
+	font-weight: bold;
+}
+
+p.validationerror {
+	color: red;
+}

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="doctg.xsl" ?>
+<testgroup
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://www.openscdp.org/schema/testframework-1.0.xsd"
+	id="tg_get" arrayElement="testcase,function" arrayIndex="id,Name">
+	<name>Test all GET operations</name>
+	<description>
+		<p></p>
+	</description>
+	<reference>
+		<p>No reference defined.</p>
+	</reference>
+
+<!-- Setup method called before each test case is executed -->
+	<setup>
+		<Script><![CDATA[
+
+			this.ta = new TestAdapter(this.parameter.url);
+
+		]]></Script>
+	</setup>
+
+
+
+<!-- Teardown method called after each test case is executed -->
+	<teardown>
+		<Script><![CDATA[
+
+
+		]]></Script>
+	</teardown>
+
+
+
+	<testcase id="TC001-GET-hsms">
+		<name>Do a GET on /hsms to retrieve a list of HSMs and each single HSM.</name>
+		<description>
+		</description>
+		<requirements>
+			<requirement source="FSP" id="FR.XXXX.1"/>
+		</requirements>
+		<reference>
+			<p></p>
+		</reference>
+		<Script><![CDATA[
+
+			var hsms = this.ta.get("/api/hsms");
+
+			for (var i = 0; i< hsms.length; i++) {
+				this.assertTrue(hsms[i].id, "Must return a list of hsms");
+
+				var hsm = this.ta.get("/api/hsms/" + hsms[i].id);
+				this.assertTrue(hsm.id, "Must return a single hsm entry");
+			}
+
+		]]></Script>
+	</testcase>
+
+
+
+	<testcase id="TC010-GET-hsmkeys">
+		<name>Do a GET on /hsms/:hsmid/keys to retrieve a list of keys and each single key.</name>
+		<description>
+		</description>
+		<requirements>
+			<requirement source="FSP" id="FR.XXXX.1"/>
+		</requirements>
+		<reference>
+			<p></p>
+		</reference>
+		<Script><![CDATA[
+
+			var hsms = this.ta.get("/api/hsms");
+
+			for (var i = 0; i < hsms.length; i++) {
+				this.assertTrue(hsms[i].id, "Must return a list of hsms");
+
+				var keys = this.ta.get("/api/hsms/" + hsms[i].id + "/keys");
+
+				for (var j = 0; j < keys.length; j++) {
+					this.assertTrue(keys[j].id, "Must return a list of keys");
+
+					var key = this.ta.get("/api/hsms/" + hsms[i].id + "/keys/" + keys[j].id);
+
+					this.assertTrue(key.id, "Must return a single key entry");
+				}
+			}
+
+		]]></Script>
+	</testcase>
+
+
+
+	<testcase id="TC020-GET-keys">
+		<name>Do a GET on /keys to retrieve a list of keys and each single key.</name>
+		<description>
+		</description>
+		<requirements>
+			<requirement source="FSP" id="FR.XXXX.1"/>
+		</requirements>
+		<reference>
+			<p></p>
+		</reference>
+		<Script><![CDATA[
+
+			var keys = this.ta.get("/api/keys");
+
+			for (var i = 0; i< keys.length; i++) {
+				this.assertTrue(keys[i].id, "Must return a list of keys");
+
+				var key = this.ta.get("/api/keys/" + keys[i].id);
+				this.assertTrue(key.id, "Must return a single key entry");
+			}
+
+		]]></Script>
+	</testcase>
+
+
+
+	<testcase id="TC030-GET-keydomains">
+		<name>Do a GET on /keydomains to retrieve a list of key domainss and each single key domain.</name>
+		<description>
+		</description>
+		<requirements>
+			<requirement source="FSP" id="FR.XXXX.1"/>
+		</requirements>
+		<reference>
+			<p></p>
+		</reference>
+		<Script><![CDATA[
+
+			var keydomains = this.ta.get("/api/keydomains");
+
+			for (var i = 0; i< keydomains.length; i++) {
+				this.assertTrue(keydomains[i].id, "Must return a list of key domains");
+
+				var keydomain = this.ta.get("/api/keydomains/" + keydomains[i].id);
+				this.assertTrue(keydomain.id, "Must return a single key domain entry");
+			}
+
+		]]></Script>
+	</testcase>
+
+
+
+	<testcase id="TC050-GET-keydomainkeys">
+		<name>Do a GET on /keydomains/:keydomainid/keys to retrieve a list of keys and each single key.</name>
+		<description>
+		</description>
+		<requirements>
+			<requirement source="FSP" id="FR.XXXX.1"/>
+		</requirements>
+		<reference>
+			<p></p>
+		</reference>
+		<Script><![CDATA[
+
+			var keydomains = this.ta.get("/api/keydomains");
+
+			for (var i = 0; i < keydomains.length; i++) {
+				this.assertTrue(keydomains[i].id, "Must return a list of key domains");
+
+				var keys = this.ta.get("/api/keydomains/" + keydomains[i].id + "/keys");
+
+				for (var j = 0; j < keys.length; j++) {
+					this.assertTrue(keys[j].id, "Must return a list of keys");
+
+					var key = this.ta.get("/api/keydomains/" + keydomains[i].id + "/keys/" + keys[j].id);
+
+					this.assertTrue(key.id, "Must return a single key entry");
+				}
+			}
+
+		]]></Script>
+	</testcase>
+</testgroup>

@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="doctg.xsl" ?>
+<testgroup
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://www.openscdp.org/schema/testframework-1.0.xsd"
+	id="tg_signhash" arrayElement="testcase,function" arrayIndex="id,Name">
+	<name>Test all sign hash operations</name>
+	<description>
+		<p></p>
+	</description>
+	<reference>
+		<p>No reference defined.</p>
+	</reference>
+
+<!-- Setup method called before each test case is executed -->
+	<setup>
+		<Script><![CDATA[
+
+			this.ta = new TestAdapter(this.parameter.url);
+
+		]]></Script>
+	</setup>
+
+
+
+<!-- Teardown method called after each test case is executed -->
+	<teardown>
+		<Script><![CDATA[
+
+
+		]]></Script>
+	</teardown>
+
+
+
+	<testcase id="TC010-sign-hsmkeys">
+		<name>Sign with all asymmetric keys in /hsms/:hsmid/keys.</name>
+		<description>
+		</description>
+		<requirements>
+			<requirement source="FSP" id="FR.XXXX.1"/>
+		</requirements>
+		<reference>
+			<p></p>
+		</reference>
+		<Script><![CDATA[
+
+			var hsms = this.ta.get("/api/hsms");
+
+			for (var i = 0; i < hsms.length; i++) {
+				this.assertTrue(hsms[i].id, "Must return a list of hsms");
+
+				var keys = this.ta.get("/api/hsms/" + hsms[i].id + "/keys");
+
+				for (var j = 0; j < keys.length; j++) {
+					this.assertTrue(keys[j].id, "Must return a list of keys");
+
+					var kref = "/api/hsms/" + hsms[i].id + "/keys/" + keys[j].id;
+					var key = this.ta.get(kref);
+
+					this.assertTrue(key.id, "Must return a single key entry");
+
+					var pk = undefined;
+					if (key.cert) {
+						var bin = new ByteString(key.cert, BASE64);
+						if (bin.byteAt(0) == 0x30) {
+							var cert = new X509(bin);
+						} else {
+							var cert = new CVC(bin);
+						}
+						pk = cert.getPublicKey();
+					}
+
+					var message = new ByteString("Hello World", ASCII);
+					var hash = this.parameter.crypto.digest(Crypto.SHA_256, message);
+
+					var inp = {
+						hash: hash.toString(HEX)
+					};
+
+					if (key.type == "EC") {
+						inp.algo = "ECDSA";
+						var sig = this.ta.post(kref + "/signhash", inp);
+
+						if (pk) {
+							this.assertTrue(this.parameter.crypto.verify(pk, Crypto.ECDSA, hash, new ByteString(sig.signature, HEX)), "Signature verification failed");
+						}
+					} else if (key.type == "RSA") {
+						inp.algo = "RSA_PKCS1";
+						var sig = this.ta.post(kref + "/signhash", inp);
+
+						if (pk) {
+							this.assertTrue(this.parameter.crypto.verify(pk, Crypto.RSA_SHA256, message, new ByteString(sig.signature, HEX)), "Signature verification failed");
+						}
+
+						inp.algo = "RSA_PSS";
+						var sig = this.ta.post(kref + "/signhash", inp);
+
+						if (pk) {
+							this.assertTrue(this.parameter.crypto.verify(pk, Crypto.RSA_PSS_SHA256, message, new ByteString(sig.signature, HEX)), "Signature verification failed");
+						}
+					}
+				}
+			}
+
+		]]></Script>
+	</testcase>
+
+
+
+	<testcase id="TC020-sign-keys">
+		<name>Sign with all asymmetric keys in /keys.</name>
+		<description>
+		</description>
+		<requirements>
+			<requirement source="FSP" id="FR.XXXX.1"/>
+		</requirements>
+		<reference>
+			<p></p>
+		</reference>
+		<Script><![CDATA[
+
+			var keys = this.ta.get("/api/keys");
+
+			for (var i = 0; i< keys.length; i++) {
+				this.assertTrue(keys[i].id, "Must return a list of keys");
+
+				var kref = "/api/keys/" + keys[i].id;
+
+				var key = this.ta.get(kref);
+				this.assertTrue(key.id, "Must return a single key entry");
+
+				var pk = undefined;
+				if (key.cert) {
+					var bin = new ByteString(key.cert, BASE64);
+					if (bin.byteAt(0) == 0x30) {
+						var cert = new X509(bin);
+					} else {
+						var cert = new CVC(bin);
+					}
+					pk = cert.getPublicKey();
+				}
+
+				var message = new ByteString("Hello World", ASCII);
+				var hash = this.parameter.crypto.digest(Crypto.SHA_256, message);
+
+				var inp = {
+					hash: hash.toString(HEX)
+				};
+
+				if (key.type == "EC") {
+					inp.algo = "ECDSA";
+					var sig = this.ta.post(kref + "/signhash", inp);
+
+					if (pk) {
+						this.assertTrue(this.parameter.crypto.verify(pk, Crypto.ECDSA, hash, new ByteString(sig.signature, HEX)), "Signature verification failed");
+					}
+				} else if (key.type == "RSA") {
+					inp.algo = "RSA_PKCS1";
+					var sig = this.ta.post(kref + "/signhash", inp);
+
+					if (pk) {
+						this.assertTrue(this.parameter.crypto.verify(pk, Crypto.RSA_SHA256, message, new ByteString(sig.signature, HEX)), "Signature verification failed");
+					}
+
+					inp.algo = "RSA_PSS";
+					var sig = this.ta.post(kref + "/signhash", inp);
+
+					if (pk) {
+						this.assertTrue(this.parameter.crypto.verify(pk, Crypto.RSA_PSS_SHA256, message, new ByteString(sig.signature, HEX)), "Signature verification failed");
+					}
+				}
+			}
+		]]></Script>
+	</testcase>
+
+
+
+	<testcase id="TC030-sign-keydomainkeys">
+		<name>Sign with all asymmetric keys in /keydomains/:keydomainid/keys.</name>
+		<description>
+		</description>
+		<requirements>
+			<requirement source="FSP" id="FR.XXXX.1"/>
+		</requirements>
+		<reference>
+			<p></p>
+		</reference>
+		<Script><![CDATA[
+
+			var keydomains = this.ta.get("/api/keydomains");
+
+			for (var i = 0; i < keydomains.length; i++) {
+				this.assertTrue(keydomains[i].id, "Must return a list of key domains");
+
+				var keys = this.ta.get("/api/keydomains/" + keydomains[i].id + "/keys");
+
+				for (var j = 0; j < keys.length; j++) {
+					this.assertTrue(keys[j].id, "Must return a list of keys");
+
+					var kref = "/api/keydomains/" + keydomains[i].id + "/keys/" + keys[j].id;
+					var key = this.ta.get(kref);
+
+					this.assertTrue(key.id, "Must return a single key entry");
+
+					var pk = undefined;
+					if (key.cert) {
+						var bin = new ByteString(key.cert, BASE64);
+						if (bin.byteAt(0) == 0x30) {
+							var cert = new X509(bin);
+						} else {
+							var cert = new CVC(bin);
+						}
+						pk = cert.getPublicKey();
+					}
+
+					var message = new ByteString("Hello World", ASCII);
+					var hash = this.parameter.crypto.digest(Crypto.SHA_256, message);
+
+					var inp = {
+						hash: hash.toString(HEX)
+					};
+
+					if (key.type == "EC") {
+						inp.algo = "ECDSA";
+						var sig = this.ta.post(kref + "/signhash", inp);
+
+						if (pk) {
+							this.assertTrue(this.parameter.crypto.verify(pk, Crypto.ECDSA, hash, new ByteString(sig.signature, HEX)), "Signature verification failed");
+						}
+					} else if (key.type == "RSA") {
+						inp.algo = "RSA_PKCS1";
+						var sig = this.ta.post(kref + "/signhash", inp);
+
+						if (pk) {
+							this.assertTrue(this.parameter.crypto.verify(pk, Crypto.RSA_SHA256, message, new ByteString(sig.signature, HEX)), "Signature verification failed");
+						}
+
+						inp.algo = "RSA_PSS";
+						var sig = this.ta.post(kref + "/signhash", inp);
+
+						if (pk) {
+							this.assertTrue(this.parameter.crypto.verify(pk, Crypto.RSA_PSS_SHA256, message, new ByteString(sig.signature, HEX)), "Signature verification failed");
+						}
+					}
+				}
+			}
+
+		]]></Script>
+	</testcase>
+</testgroup>

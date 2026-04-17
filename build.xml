@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="sc-hsm-cloud-service" xmlns:ivy="antlib:org.apache.ivy.ant"  basedir="." default="all">
+
+	<property name="major" value="0"/>
+	<property name="minor" value="2"/>
+	<property name="revision" value="0"/>	<!-- Set by jenkins -->
+	<property name="version" value="${major}.${minor}.${revision}"/>
+	<echo message="Version number is ${version}"/>
+
+	<property name="shortname" value="${ant.project.name}"/>
+	<property name="build" location="build"/>
+	<property name="releasedir" location="released"/>
+
+	<property name="publishresolver" value="local"/>
+
+
+	<target name="ivyinit">
+		<property name="ivy.settings.file" value="../ivysettings.xml" />
+		<property name="ivy.settings.url" value="http://jenkins.mi.cardcontact.de/ivysettings.xml" />
+		<ivy:configure />
+	</target>
+
+
+	<target name="-unpack-fs" if="unpack-fs" >
+		<untar src="${dep.to}" dest="${basedir}" compression="gzip" />
+		<delete file="${dep.to}" />
+		<echo message="Unpacked" file="${dep.to}.unpacked" />
+	</target>
+
+
+	<target name="resolve" depends="ivyinit">
+		<mkdir dir="${basedir}/lib"/>
+		<ivy:retrieve type="jar,bundle,fs"/>
+	</target>
+
+
+	<target name="bundle">
+		<echo message="VERSION=&quot;${shortname} V${version}&quot;" file="${basedir}/apps/build.version"/>
+
+		<property name="bundlename" value="${shortname}-${version}-standalone"/>
+		<property name="bundle" location="${releasedir}/${bundlename}.tar.gz"/>
+
+		<tar compression="gzip" destfile="${bundle}">
+			<tarfileset dir="${basedir}" prefix="${bundlename}">
+				<include name="apps/"/>
+				<include name="etc/template/"/>
+				<include name="lib/"/>
+				<include name="scsh/"/>
+				<include name="static/"/>
+				<include name="tools/"/>
+				<include name="config.js"/>
+			</tarfileset>
+			<tarfileset dir="${basedir}" prefix="${bundlename}" filemode="755">
+				<include name="scriptingserver" />
+			</tarfileset>
+		</tar>
+		<symlink overwrite="true" link="${releasedir}/${shortname}-standalone.tar.gz" resource="${releasedir}/${shortname}-${version}-standalone.tar.gz" />
+	</target>
+
+
+	<target name="clean">
+		<delete dir="${basedir}/lib"/>
+	</target>
+
+
+	<target name="all" depends="resolve,bundle"/>
+</project>
