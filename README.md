@@ -6,7 +6,7 @@ SmartCard-HSMs connected via RAMOverHTTP to it.
 Deploy this service as a sidecar to your own cloud service and get access to the device
 without forwarding USB devices or remote PC/SC or PKCS#11 setups.
 
-**WARNING** This is work-in-progress and currently not more than a Proof-of-Concept. There is no
+**WARNING** This is work-in-progress and currently nothing more than a Proof-of-Concept. There is no
 further authentication at the REST-API, leaving keys fully exposed to any client connecting. To use this
 in a production environment, you need to add TLS certificates and enable MTLS to authenticate a client
 accessing the REST API.
@@ -111,12 +111,12 @@ Supported algorithms are ECDSA for EC keys, RSA_PKCS1 and RSA_PSS for RSA keys.
 
 A test suite for the Smart Card Shell is contained in the `test` directory.
 
-## Setting up a local developement environment
+## Setting up a local development environment
 
 To use the service locally, you need to install ant+ivy and run
 
     ant -Dunpack-fs=1 resolve
     
-to retrieve the latest OpenSCDP scriptingserver and scsh-mods. See the dockerfile what is required
+to retrieve the latest OpenSCDP `scriptingserver` and `scsh-mods`. See the `dockerfile` what is required
 to bundle the components locally.
 
