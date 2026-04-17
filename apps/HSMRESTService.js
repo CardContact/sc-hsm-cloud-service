@@ -202,7 +202,7 @@ HSMRESTService.prototype.updateModel = function() {
 					spki = PKIXCommon.createRSASubjectPublicKeyInfo(pubkey);
 				} else {
 					if (pubkey.getComponent(Key.ECC_CURVE_OID) == undefined) {
-						pubkey.getComponent(Key.ECC_CURVE_OID, new ByteString("brainpoolP256r1", OID));
+						pubkey.setComponent(Key.ECC_CURVE_OID, new ByteString("brainpoolP256r1", OID));
 					}
 					spki = PKIXCommon.createECSubjectPublicKeyInfo(pubkey, false);
 				}
