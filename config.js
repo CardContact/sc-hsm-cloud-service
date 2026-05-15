@@ -119,6 +119,33 @@ switch(getPlatformID()) {
 		defineClass("de.cardcontact.scdp.scsh3.Dialog");
 		defineClass("de.cardcontact.scdp.scsh3.AccessTerminal");
 		defineClass("de.cardcontact.scdp.scsh3.Task");
+
+		var filename = GPSystem.mapFilename(".settings.js", GPSystem.AUTO);
+
+		if (filename) {
+			load(filename);
+		} else {
+			var _scsh3 = new Object();
+		}
+
+		_scsh3.setProperty = function(property, value) {
+			this[property] = value;
+			var filename = GPSystem.mapFilename(".settings.js", GPSystem.AUTO);
+			if (!filename) {
+					filename = GPSystem.mapFilename(".settings.js", GPSystem.USR);
+			}
+			var cf = new java.io.FileWriter(filename);
+			cf.write("//\n");
+			cf.write("// Automatically generated file - Do not change\n");
+			cf.write("//\n");
+			cf.write("var _scsh3 = new Object();\n");
+			for (i in this) {
+				if (!(this[i] instanceof Function)) {
+					cf.write("_scsh3[\"" + i + "\"] = \"" + this[i] + "\";\n");
+				}
+			}
+			cf.close();
+		}
 		break;
 }
 

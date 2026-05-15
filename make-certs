@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -xe
+
+
+# Create fresh truststore
+cd tls
+./issue-cert client v3_req_tls_client
+./issue-cert localhost
+
+rm -f truststore.p12
+keytool -import -keystore truststore.p12 -noprompt -file cert_root_ca.pem -alias rootca -storepass password
+keytool -import -keystore truststore.p12 -noprompt -file cert_system_ca.pem -alias systemca -storepass password
+chmod 644 truststore.p12
+cd ..
+
+mkdir -p etc/tls
+cp tls/truststore.p12 etc/tls
+
+rm -f etc/tls/clientkeystore.p12
+cat tls/key/prk_client.pem tls/newcerts/cert_client.pem >client.pem
+openssl pkcs12 -export -out etc/tls/clientkeystore.p12 -in client.pem -name client --passout pass:password
+chmod 644 etc/tls/clientkeystore.p12
+rm client.pem
+
+rm -f etc/tls/keystore.p12
+cat tls/key/prk_localhost.pem tls/newcerts/cert_localhost.pem tls/cert_system_ca.pem >client.pem
+openssl pkcs12 -export -out etc/tls/keystore.p12 -in client.pem -name server --passout pass:password
+chmod 644 etc/tls/keystore.p12
+rm client.pem

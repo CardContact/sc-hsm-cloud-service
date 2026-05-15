@@ -57,6 +57,6 @@ var HSMRESTService = require('HSMRESTService').HSMRESTService;
 
 var srv = new HSMRESTService(hsm);
 
-ApplicationServer.instance.registerServiceForURL("api", { name: "SmartCard-HSM Service", description: "SmartCard-HSM REST Service", restHandler: srv}, 8080);
+ApplicationServer.instance.registerServiceForURL("api", { name: "SmartCard-HSM Service", description: "SmartCard-HSM REST Service", restHandler: srv}, 8443 );
 
 

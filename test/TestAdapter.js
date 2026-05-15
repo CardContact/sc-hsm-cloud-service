@@ -33,9 +33,22 @@
  */
 function TestAdapter(url) {
 	this.url = url;
+	this.keyStore = new KeyStore("BC", "PKCS12", "etc/tls/clientkeystore.p12", "password");
+	this.keyPassword = "password";
+	this.trustStore = new KeyStore("BC", "PKCS12", "etc/tls/truststore.p12", "password");
 }
 
 exports.TestAdapter = TestAdapter;
+
+
+
+TestAdapter.prototype.getURLConnection = function(path) {
+	var url = new URLConnection(this.url + path);
+
+	url.setTLSKeyStores(this.trustStore, this.keyStore, this.keyPassword);
+	url.addHeaderField("Accept", "application/json");
+	return url;
+}
 
 
 
@@ -47,8 +60,7 @@ exports.TestAdapter = TestAdapter;
  */
 TestAdapter.prototype.get = function(path) {
 
-	var url = new URLConnection(this.url + path);
-	url.addHeaderField("Accept", "application/json");
+	var url = this.getURLConnection(path);
 
 	var result = url.get();
 
@@ -67,8 +79,7 @@ TestAdapter.prototype.get = function(path) {
  */
 TestAdapter.prototype.post = function(path, req) {
 
-	var url = new URLConnection(this.url + path);
-	url.addHeaderField("Accept", "application/json");
+	var url = this.getURLConnection(path);
 	url.addHeaderField("Content-Type", "application/json");
 
 	var result = url.post(JSON.stringify(req));

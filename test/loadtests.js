@@ -34,7 +34,7 @@ var CVC = require("scsh/eac/CVC").CVC;
 
 var param = {};
 param.crypto = new Crypto();
-param.url = "http://localhost:8080/se";
+param.url = "https://localhost:8443/se";
 
 
 var testRunner = new TestRunner("SmartCard-HSM Clout Service Test Suite");
