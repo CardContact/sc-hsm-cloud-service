@@ -47,7 +47,7 @@ function performCardUpdate(session, pathInfo) {
 
 // --- HSM section ---
 
-var HSMService = require('scsh/srv-cc1/HSMService').HSMService;
+var HSMService = require('HSMService').HSMService;
 
 var hsm = new HSMService();
 

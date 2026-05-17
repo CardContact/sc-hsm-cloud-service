@@ -38,8 +38,6 @@ const Router = require("scsh/srv-cc1/Router").Router;
 function HSMRESTService(hsmService) {
 	this.hsmService = hsmService;
 
-	this.model = [];
-
 	this.router = new Router();
 	this.router.add("hsms",            "/api/hsms", this);
 	this.router.add("hsm",             "/api/hsms/:hsmid", this);
@@ -78,51 +76,6 @@ HSMRESTService.transformTokenId = function(path) {
 
 
 /**
- * Enumerate key domains on a SmartCard-HSM.
- *
- * @param {SmartCardHSM} sc the hsm.
- * @type Array
- * @return an array of key domain status objects-
- */
-HSMRESTService.prototype.enumerateKeyDomains = function(sc) {
-	var kdid = 0;
-	var keyDomains = [];
-
-	do	{
-		var status = sc.queryKeyDomainStatus(kdid);
-		if ((status.sw == 0x6D00) || (status.sw == 0x6A86)) {
-			return keyDomains;
-		}
-
-		if (status.sw == 0x9000) {
-			var id = undefined;
-
-			if (status.keyDomain) {
-				id = status.keyDomain.toString(HEX);
-			} else if (status.outstanding == 0) {
-				id = status.kcv.toString(HEX);
-			}
-
-			status.label = sc.getKeyDomainLabel(kdid);
-
-			if (id) {
-				var dom = { id: id, status: status };
-				if (status.label) {
-					dom.label = status.label;
-				}
-				keyDomains[kdid] = dom;
-			}
-		}
-
-		kdid++;
-	} while ((status.sw == 0x9000) || (status.sw == 0x6A88));
-
-	return keyDomains;
-}
-
-
-
-/**
  * Copy elements from a JSON object, excluding properties in the exception list
  *
  * @param {Object} source the source JSON object.
@@ -145,90 +98,6 @@ HSMRESTService.cloneExcept = function(source, exeptionList) {
 
 
 /**
- * Update the internal data model, if something has changed.
- */
-HSMRESTService.prototype.updateModel = function() {
-	var states = this.hsmService.getHSMStates();
-	if (states.length == this.model.length) {
-		return;
-	}
-
-	var model = [];
-	for (var i = 0; i < states.length; i++) {
-		var state = states[i];
-
-		var cp = this.hsmService.getCryptoProvider(state.path, false);
-
-		var keyDomains = this.enumerateKeyDomains(cp.sc);
-
-		var keyIds = cp.sc.getKeyIds();
-		var keys = [];
-
-		for (var j = 0; j < keyIds.length; j++) {
-			var key = cp.sc.getKey(keyIds[j]);
-
-			var desc = {
-				id: key.getPKCS15Id().toString(HEX),
-				label: key.getLabel(),
-				type: key.getType(),
-				size: key.getSize(),
-				key: key
-			};
-
-			if (typeof(key.useCounter) != "undefined") {
-				desc.keyUseCounter = key.useCounter;
-			}
-			if (typeof(key.algorithms) != "undefined") {
-				desc.algorithms = SmartCardHSM.decodeAlgorithmList(key.algorithms);
-			}
-
-			if (typeof(key.keyDomain) != "undefined") {
-				desc.keyDomainIdx = key.keyDomain;
-			}
-
-			if (cp.ks.hasCertificate(key)) {
-				var cert = cp.ks.getCertificate(key);
-				var pubkey;
-				if (cert.byteAt(0) == 0x30) {
-					var xcert = new X509(cert);
-					pubkey = xcert.getPublicKey();
-				} else {
-					var cvc = new CVC(cert);
-					pubkey = cvc.getPublicKey();
-				}
-
-				var spki;
-				if (pubkey.getComponent(Key.MODULUS)) {
-					spki = PKIXCommon.createRSASubjectPublicKeyInfo(pubkey);
-				} else {
-					if (pubkey.getComponent(Key.ECC_CURVE_OID) == undefined) {
-						pubkey.setComponent(Key.ECC_CURVE_OID, new ByteString("brainpoolP256r1", OID));
-					}
-					spki = PKIXCommon.createECSubjectPublicKeyInfo(pubkey, false);
-				}
-
-				desc.cert = cert.toString(BASE64);
-				desc.pubkey = spki.getBytes().toString(BASE64);
-			}
-			keys.push(desc);
-		}
-
-		var id = HSMRESTService.transformTokenId(state.path);
-
-		model.push( {
-			id: id,
-			keyDomains: keyDomains,
-			defaultKeyDomain: state.defaultKeyDomain,
-			keys: keys
-		});
-	}
-
-	this.model = model;
-}
-
-
-
-/**
  * Locate the key in the data model that matches the filter criteria.
  *
  * @param {Object} filter the filter criteria.
@@ -236,11 +105,11 @@ HSMRESTService.prototype.updateModel = function() {
  * @return the found key or undefined.
  */
 HSMRESTService.prototype.locateKey = function(filter) {
-	this.updateModel();
+	var model = this.hsmService.getActiveHSMStates();
 
-	for (var i = 0; i < this.model.length; i++) {
-		var hsm = this.model[i];
-		if (filter.hsmid && (hsm.id != filter.hsmid)) {
+	for (var i = 0; i < model.length; i++) {
+		var hsm = model[i];
+		if (filter.hsmid && (HSMRESTService.transformTokenId(hsm.path) != filter.hsmid)) {
 			continue;
 		}
 
@@ -348,13 +217,13 @@ HSMRESTService.prototype.handleKeyOps = function(req, res) {
  * @param {Object} filter filter criteria
  */
 HSMRESTService.prototype.getHSMList = function(filter) {
-	this.updateModel();
+	var model = this.hsmService.getActiveHSMStates();
 
 	var hsmList = [];
 
-	for (var i = 0; i < this.model.length; i++) {
-		var hsm = this.model[i];
-		if (filter.hsmid && (hsm.id != filter.hsmid)) {
+	for (var i = 0; i < model.length; i++) {
+		var hsm = model[i];
+		if (filter.hsmid && (HSMRESTService.transformTokenId(hsm.path) != filter.hsmid)) {
 			continue;
 		}
 
@@ -385,7 +254,7 @@ HSMRESTService.prototype.getHSMList = function(filter) {
 		}
 
 		hsmList.push( {
-			id: hsm.id,
+			id: HSMRESTService.transformTokenId(hsm.path),
 			defaultKeyDomain: hsm.defaultKeyDomain,
 			keyDomains: keyDomains,
 			keys: keys
@@ -408,7 +277,6 @@ HSMRESTService.prototype.handleHSM = function(req, res) {
 
 	var r = hsmList;
 
-	var id = req.router.params.hsmid;
 	if (req.router.params.hsmid) {
 		if (hsmList.length < 1) {
 			res.setStatus(HttpResponse.SC_NOT_FOUND);
@@ -477,13 +345,13 @@ HSMRESTService.prototype.handleKeysOnHSM = function(req, res) {
  * @param {String[]} url the components of the URL
  */
 HSMRESTService.prototype.getKeyList = function(filter) {
-	this.updateModel();
+	var model = this.hsmService.getActiveHSMStates();
 
 	var keyList = [];
 	var keyMap = {};
 
-	for (var i = 0; i < this.model.length; i++) {
-		var hsm = this.model[i];
+	for (var i = 0; i < model.length; i++) {
+		var hsm = model[i];
 
 		// Clone keys, resolving the keyDomain link
 		for (var j = 0; j < hsm.keys.length; j++) {
@@ -556,14 +424,14 @@ HSMRESTService.prototype.handleKey = function(req, res, url) {
  * @param {String[]} url the components of the URL
  */
 HSMRESTService.prototype.getKeyDomainList = function(filter) {
-	this.updateModel();
+	var model = this.hsmService.getActiveHSMStates();
 
 	var keyDomainList = [];
 	var keyDomainMap = {};
 	var keyMap = {};
 
-	for (var i = 0; i < this.model.length; i++) {
-		var hsm = this.model[i];
+	for (var i = 0; i < model.length; i++) {
+		var hsm = model[i];
 
 		if (!filter.keydomainid || (hsm.defaultKeyDomain == filter.keydomainid)) {
 			var desc = { id: hsm.defaultKeyDomain, hsms: [ hsm.id ], keys: [] };
@@ -610,7 +478,7 @@ HSMRESTService.prototype.getKeyDomainList = function(filter) {
 				keyDomainMap[id].keys.push(desc);
 				keyMap[key.id] = desc;
 			}
-			desc.hsms.push(hsm.id.toString(HEX));
+			desc.hsms.push(HSMRESTService.transformTokenId(hsm.path));
 		}
 	}
 

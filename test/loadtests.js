@@ -37,7 +37,7 @@ param.crypto = new Crypto();
 param.url = "https://localhost:8443/se";
 
 
-var testRunner = new TestRunner("SmartCard-HSM Clout Service Test Suite");
+var testRunner = new TestRunner("SmartCard-HSM Cloud Service Test Suite");
 
 testRunner.addTestGroupFromXML("tg_get.xml", param);
 testRunner.addTestGroupFromXML("tg_signhash.xml", param);
