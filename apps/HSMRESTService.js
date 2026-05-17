@@ -352,6 +352,7 @@ HSMRESTService.prototype.getKeyList = function(filter) {
 
 	for (var i = 0; i < model.length; i++) {
 		var hsm = model[i];
+		var hsmid = HSMRESTService.transformTokenId(hsm.path);
 
 		// Clone keys, resolving the keyDomain link
 		for (var j = 0; j < hsm.keys.length; j++) {
@@ -373,7 +374,7 @@ HSMRESTService.prototype.getKeyList = function(filter) {
 				keyList.push(desc);
 				keyMap[key.id] = desc;
 			}
-			desc.hsms.push(hsm.id);
+			desc.hsms.push(hsmid);
 		}
 	}
 
@@ -432,9 +433,10 @@ HSMRESTService.prototype.getKeyDomainList = function(filter) {
 
 	for (var i = 0; i < model.length; i++) {
 		var hsm = model[i];
+		var hsmid = HSMRESTService.transformTokenId(hsm.path);
 
 		if (!filter.keydomainid || (hsm.defaultKeyDomain == filter.keydomainid)) {
-			var desc = { id: hsm.defaultKeyDomain, hsms: [ hsm.id ], keys: [] };
+			var desc = { id: hsm.defaultKeyDomain, hsms: [ hsmid ], keys: [] };
 			keyDomainList.push(desc);
 			keyDomainMap[desc.id] = desc;
 		}
@@ -455,7 +457,7 @@ HSMRESTService.prototype.getKeyDomainList = function(filter) {
 				keyDomainMap[keydomain.id] = desc;
 			}
 
-			desc.hsms.push(hsm.id);
+			desc.hsms.push(hsmid);
 		}
 
 		// Clone keys, resolving the keyDomain link
@@ -478,7 +480,7 @@ HSMRESTService.prototype.getKeyDomainList = function(filter) {
 				keyDomainMap[id].keys.push(desc);
 				keyMap[key.id] = desc;
 			}
-			desc.hsms.push(HSMRESTService.transformTokenId(hsm.path));
+			desc.hsms.push(hsmid);
 		}
 	}
 
